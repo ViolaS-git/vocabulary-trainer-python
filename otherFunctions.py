@@ -1,7 +1,6 @@
 import PIL.Image
 from PIL import ImageTk
 import os
-
 import fileManager
 
 def show_image(word, img_folder, img_holder):
@@ -13,6 +12,7 @@ def show_image(word, img_folder, img_holder):
         photo = ImageTk.PhotoImage(img)
         img_holder.config(image=photo)
         img_holder.image = photo
+
 def gather_data(current_words_path, shelf_path, max_words):
 
     # Check if there is space for new data

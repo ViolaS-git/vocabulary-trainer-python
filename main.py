@@ -1,35 +1,35 @@
 from tkinter import *
+import otherFunctions
 from playsound import playsound
-from gtts import gTTS
-import functions
 import os
 import random
 import time
 import fileManager
-import webScraper
 
 MAX_CURRENT = 10    #If there are more, new words can't be added manually
 MAX_SCORE = 3
 
 #This is where new added words are stored
-CURRENT_WORDS_PATH = os.path.join('Words','current','current_words.json')
-WORD_LIST_PATH = os.path.join('Words','word_list.json')
+CURRENT_WORDS_DIR = os.path.join('words','current')
+CURRENT_WORDS_PATH = os.path.join(CURRENT_WORDS_DIR,'current_words.json')
+WORD_LIST_PATH = os.path.join('words','word_list.json')
 
 #This is where old words are stored
 #File naming: DAY-MONTH-YEAR-NUM,
 #for example: 02-21-2024-001.json
-SHELF_PATH = os.path.join('Words','Shelf')
+SHELF_DIR = os.path.join('words','shelf')
 
-IMAGE_FOLDER = "Images"
+IMAGE_FOLDER = "images"
+AUDIO_DIR = "audio"
 
-GAME_DURATION = 600     #10 minutes
+AUDIO_FORMAT = ".mp3"
+
+GAME_DURATION = 300     #10 minutes
 CYRILLIC_LETTERS = "йцукенгшщзхъэждлорпавыфячсмитьбюё"
 class Ui:
     """
-    Creates tkinker interface with buttons and
-    canvas that is covered with image elements.
-
-    Handle all the features and operations of the main window
+    Creates tkinker interface with buttons and other elements.
+    Handle all the features and operations of the main window.
     """
     def __init__(self):
         self.mw = Tk()
@@ -37,7 +37,7 @@ class Ui:
 
         self.connection = False
 
-        #While game is running data:
+        #Game runtime variables:
         self.word_checked = False
         self.current_fin_word = ""
         self.current_rus_word = ""
@@ -107,15 +107,13 @@ class Ui:
         #self.sound_button.grid(row=5, column=0)
         self.check_button.grid(row=6, column=0)
         self.time_label.grid(row=7,column=0)
+
+        #Make sure necessary folders exist
+        fileManager.create_directories([SHELF_DIR, CURRENT_WORDS_DIR, IMAGE_FOLDER, AUDIO_DIR])     
+
     def show_add_view(self):
         self.menu_frame.grid_forget()
         self.add_frame.grid(row=0,column=0)
-
-        if not webScraper.test_connection():
-            self.connection_label.config(text="Ei internet yhteyttä")
-            self.connection = False
-        else:
-            self.connection = True
 
     def show_menu_view(self):
         self.add_frame.grid_forget()
@@ -141,7 +139,7 @@ class Ui:
         self.game_frame.grid(row=0, column=0)
 
         # Gather word data: (some added new words and some old words (and data related to them))
-        self.current_dict = functions.gather_data(CURRENT_WORDS_PATH,SHELF_PATH, MAX_CURRENT)
+        self.current_dict = otherFunctions.gather_data(CURRENT_WORDS_PATH,SHELF_DIR, MAX_CURRENT)
 
         #Start running the game if any words were found
         if (len(self.current_dict) != 0):
@@ -172,7 +170,7 @@ class Ui:
         self.word_checked = False
 
         # Show the image if found
-        functions.show_image(self.current_fin_word, IMAGE_FOLDER, self.img_holder)
+        otherFunctions.show_image(self.current_fin_word, IMAGE_FOLDER, self.img_holder)
 
         # Set the appearance of the UI
         self.reset_game_view()
@@ -238,15 +236,14 @@ class Ui:
     def save_progress(self):
         # Remove all the needed words from the list file
         word_list = fileManager.read_json(WORD_LIST_PATH)
-        print(word_list)
         for word in self.remove_list:
             i = word_list.index(word)
             word_list.pop(i)
 
-            #Remove the image too
-            img_file_name = word + ".png"
-            img_path = os.path.join(IMAGE_FOLDER,img_file_name)
-            fileManager.delete_file(img_path)
+            #remove audio files too
+            audio_file = os.path.join(AUDIO_DIR,word+AUDIO_FORMAT)
+            print(f"removing an audio file: {audio_file}")
+            fileManager.delete_file(audio_file)
 
         fileManager.write_json(word_list, WORD_LIST_PATH)
         self.remove_list = []
@@ -256,9 +253,9 @@ class Ui:
         fileManager.write_json(self.incorrect_dict, CURRENT_WORDS_PATH)
 
         # Put right answers to shelf
-        print("right answers after round: ", self.correct_dict)
+        #print("right answers after round: ", self.correct_dict)
         if(len(self.correct_dict) > 0):
-            fileManager.store_in_shelf(self.correct_dict, SHELF_PATH)
+            fileManager.store_in_shelf(self.correct_dict, SHELF_DIR)
 
     def enter_rehearse_phase(self):
         # Start revising the words that went wrong (if there are any)
@@ -288,6 +285,7 @@ class Ui:
 
                 # All the words are asked: save the progres, and enter the rehearing phase
                 else:
+                    print("entering the rehearse phase")
                     self.save_progress()
                     self.enter_rehearse_phase()
                     if (len(self.current_dict) != 0):
@@ -305,28 +303,6 @@ class Ui:
             else:
                 self.end_game()
 
-    def pronounce_russian(self, word=""):
-        print("pronouncing")
-        if(word==""):
-            print(self.current_dict)
-            word = self.current_dict[self.current_fin_word][0]
-
-        # Convert the Russian text to speech
-        tts = gTTS(word, lang='ru')
-
-        # Save the speech as an MP3 file
-        filename = "russian_word.mp3"
-        tts.save(filename)
-
-        #Pause for a half a second (so that the file has time to load)
-        time.sleep(0.5)
-
-        # Play the MP3 file
-        playsound(filename)
-
-        # Remove the MP3 file after playing
-        os.remove(filename)
-
     def accept_new_word(self, fin_word, rus_word):
         # Check that entries are not empty
         if fin_word == "" or rus_word == "":
@@ -341,10 +317,8 @@ class Ui:
         return True
 
     """
-    * Check that inputs are not empty. 
-    * Create current.json file if doesn't exist
-    * Add the word in finnish and russian with a score to the json file,
-    if it's not already added
+    * Add a word to the game, if it doesn't already exist.
+    * Create audio file for the russian word
     """
     def add_word(self):
         # Get the user written words
@@ -355,7 +329,7 @@ class Ui:
         russian_word.lower()
 
         #Check input
-        if(self.accept_new_word(finnish_word, russian_word)==False):
+        if(self.accept_new_word(finnish_word, russian_word)!=True):
             return
 
         word_dict = fileManager.read_json(CURRENT_WORDS_PATH)
@@ -379,14 +353,21 @@ class Ui:
         fileManager.write_json(word_dict, CURRENT_WORDS_PATH)
         fileManager.write_json(word_list, WORD_LIST_PATH)
 
+        #add audio file for the russian word
+        fileManager.create_russian_audio(russian_word, finnish_word, AUDIO_DIR)
+
         # Inform the user about successful action
         self.note_label.config(text="Sana lisätty")
         self.rus_entry.delete(0, 'end')
         self.fin_entry.delete(0, 'end')
+        print(f'word "{finnish_word}" added')
 
-        # Search an image
-        if self.connection:
-            webScraper.search_an_image(russian_word, finnish_word, IMAGE_FOLDER)
+    """
+    Search an audio file with a name {fiWord} and play it
+    """
+    def pronounce_russian(self):
+        path = os.path.join("audio", f"{self.current_fin_word}.mp3")
+        playsound(path)
 
     def start(self):
         self.mw.mainloop()
