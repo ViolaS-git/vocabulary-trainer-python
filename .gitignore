@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 #specific files/directories
 words/
 images/
@@ -8,6 +9,8 @@ word_list.json
 #IDE
 .idea/
 
+=======
+>>>>>>> 7e349d3d830a983b4fef48de1244c1c5e37aa7e1
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
