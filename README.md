@@ -1,6 +1,6 @@
 # Russian vocabulary trainer
 A Python-based language learning application that allows users to store 
-Russian–Finnish vocabulary pairs (in theory, you can replace Finnish with eny other language) 
+Russian–Finnish vocabulary pairs (in theory, you can replace Finnish with any other language) 
 and practice Russian word recall through an interactive game interface.
 The project was created to experiment with different ways of memorizing words and short phrases.
 
@@ -12,3 +12,7 @@ The project was created to experiment with different ways of memorizing words an
 - Permanently removes word pairs once a score of 3 is reached
 - Allows the user to listen to the pronunciation of the Russian word after answering
 
+## Setting Up 
+You will have to set up **Conda, and Python3**.
+* To install dependencies: `pip install -r requirements.txt`
+* To launch the game: `python3 main.py` 
