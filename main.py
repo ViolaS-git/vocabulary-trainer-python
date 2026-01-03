@@ -58,7 +58,7 @@ class Ui:
         #Menu objects
         self.play_btn = Button(self.menu_frame, text="Pelaa", command=self.start_game)
         self.add_btn = Button(self.menu_frame, text="Lisää sana", command=self.show_add_view)
-        self.quit_btn = Button(self.menu_frame, text="Sulje")
+        self.quit_btn = Button(self.menu_frame, text="Sulje", command=self.mw.destroy)
 
         self.play_btn.grid(row=0, column=0)
         self.add_btn.grid(row=1, column=0)
