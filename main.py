@@ -53,17 +53,23 @@ class Ui:
         self.add_frame = Frame(self.mw)
         self.game_frame = Frame(self.mw)
 
-        self.menu_frame.grid(row= 0,column=0)
-        
+        self.menu_frame.grid(row=0, column=0, sticky="nsew")
+        self.menu_frame.grid_columnconfigure(0, weight=1)
+        self.add_frame.grid_columnconfigure(0, weight=1)
+        self.game_frame.grid_columnconfigure(0, weight=1)
+
+        self.menu_inner = Frame(self.menu_frame)
+        self.menu_inner.grid(row=0, column=0)
+
         # Set window size and center it
         self.mw.geometry("600x400")
         self.mw.update()
         self.mw.resizable(False, False)
 
         #Menu objects
-        self.play_btn = Button(self.menu_frame, text="Pelaa", command=self.start_game)
-        self.add_btn = Button(self.menu_frame, text="Lisää sana", command=self.show_add_view)
-        self.quit_btn = Button(self.menu_frame, text="Sulje", command=self.mw.destroy)
+        self.play_btn = Button(self.menu_inner, text="Pelaa", width=30, command=self.start_game)
+        self.add_btn = Button(self.menu_inner, text="Lisää sana", width=30, command=self.show_add_view)
+        self.quit_btn = Button(self.menu_inner, text="Sulje", width=30, command=self.mw.destroy)
 
         self.play_btn.grid(row=0, column=0)
         self.add_btn.grid(row=1, column=0)
