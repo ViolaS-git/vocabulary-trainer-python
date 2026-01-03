@@ -54,6 +54,11 @@ class Ui:
         self.game_frame = Frame(self.mw)
 
         self.menu_frame.grid(row= 0,column=0)
+        
+        # Set window size and center it
+        self.mw.geometry("600x400")
+        self.mw.update()
+        self.mw.resizable(False, False)
 
         #Menu objects
         self.play_btn = Button(self.menu_frame, text="Pelaa", command=self.start_game)

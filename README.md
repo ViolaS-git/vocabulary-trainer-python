@@ -14,5 +14,7 @@ The project was created to experiment with different ways of memorizing words an
 
 ## Setting Up 
 You will have to set up **Conda, and Python3**.
+* To create virtualenv `conda create --name myenv python=3.11`
+* To activate the environment `conda activate myenv`
 * To install dependencies: `pip install -r requirements.txt`
-* To launch the game: `python3 main.py` 
+* To launch the game: `python main.py`
